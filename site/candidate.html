@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RSPL Candidate Portal</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { font-family: "Segoe UI", system-ui, sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #3b82f6 100%); }
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .b-init { background:#dbeafe; color:#1d4ed8; }
+    .b-form { background:#ede9fe; color:#5b21b6; }
+    .b-signed { background:#fef9c3; color:#854d0e; }
+    .b-approved { background:#dcfce7; color:#166534; }
+    .b-rejected { background:#fee2e2; color:#991b1b; }
+    .step-active { background:#3b82f6; color:white; }
+    .step-inactive { background:#f1f5f9; color:#64748b; }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Top Bar -->
+  <div class="gradient-bg text-white px-6 py-4 shadow-lg flex items-center justify-between">
+    <div>
+      <div class="text-lg font-bold">RSPL Health</div>
+      <div class="text-xs text-blue-200">Candidate Onboarding Portal</div>
+    </div>
+    <div class="text-xs text-blue-100">
+      Token: <span id="token-short" class="font-semibold">-</span>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto p-6">
+
+    <!-- Progress Steps (Only 3 now) -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <div id="step-1" class="step-active px-3 py-1 rounded-full text-sm font-semibold">1. Verify</div>
+      <div id="step-2" class="step-inactive px-3 py-1 rounded-full text-sm font-semibold">2. Fill Form</div>
+      <div id="step-3" class="step-inactive px-3 py-1 rounded-full text-sm font-semibold">3. Status</div>
+    </div>
+
+    <!-- Alerts -->
+    <div id="alert" class="hidden mb-4 px-4 py-3 rounded-lg"></div>
+
+    <!-- Verify Card -->
+    <div id="panel-verify" class="card p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Verifying your link…</h2>
+          <p class="text-sm text-gray-600 mt-1">Please wait while we validate your onboarding token.</p>
+        </div>
+        <div id="verify-status" class="text-sm font-semibold text-blue-700">Checking…</div>
+      </div>
+    </div>
+
+    <!-- Candidate Summary -->
+    <div id="panel-summary" class="card p-6 mb-6 hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-sm text-gray-500">Candidate</div>
+          <div id="cand-name" class="text-2xl font-bold text-gray-900">-</div>
+          <div id="cand-email" class="text-sm text-gray-600">-</div>
+        </div>
+        <div>
+          <div class="text-sm text-gray-500 mb-1">Current Status</div>
+          <div id="cand-badge" class="badge b-init inline-block">INITIATED</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Panel -->
+    <div id="panel-form" class="card p-6 mb-6 hidden">
+      <h2 class="text-xl font-bold text-gray-800 mb-2">Joining Form</h2>
+      <p class="text-sm text-gray-600 mb-4">
+        Fill the form and upload documents. After submission, HR will review your details.
+      </p>
+
+      <form id="joining-form" class="space-y-6">
+
+        <!-- Personal -->
+        <div>
+          <div class="font-bold text-gray-700 mb-2">Personal Details</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Father's Name *</label>
+              <input name="fathersName" class="w-full border rounded-lg px-3 py-2" required minlength="2"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Date of Birth *</label>
+              <input type="date" name="dob" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Gender *</label>
+              <select name="gender" class="w-full border rounded-lg px-3 py-2" required>
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Marital Status *</label>
+              <input name="maritalStatus" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Blood Group *</label>
+              <input name="bloodGroup" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div>
+          <div class="font-bold text-gray-700 mb-2">Address</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label class="text-sm font-semibold text-gray-700">Permanent Address *</label>
+              <input name="permanentAddress" class="w-full border rounded-lg px-3 py-2" required minlength="5"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">District *</label>
+              <input name="district" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">State *</label>
+              <input name="state" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">PIN Code *</label>
+              <input name="pinCode" class="w-full border rounded-lg px-3 py-2" required pattern="^[1-9][0-9]{5}$" placeholder="6 digits"/>
+              <div class="text-xs text-gray-500 mt-1">Format: 6 digits</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank & PAN -->
+        <div>
+          <div class="font-bold text-gray-700 mb-2">Bank & PAN</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm font-semibold text-gray-700">PAN *</label>
+              <input name="panCardNo" class="w-full border rounded-lg px-3 py-2" required pattern="^[A-Z]{5}[0-9]{4}[A-Z]$" placeholder="ABCDE1234F"/>
+              <div class="text-xs text-gray-500 mt-1">Format: ABCDE1234F</div>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Bank Name *</label>
+              <input name="bankName" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Account No *</label>
+              <input name="bankAccountNo" class="w-full border rounded-lg px-3 py-2" required minlength="6"/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">IFSC *</label>
+              <input name="ifscCode" class="w-full border rounded-lg px-3 py-2" required pattern="^[A-Z]{4}0[A-Z0-9]{6}$" placeholder="SBIN0001234"/>
+              <div class="text-xs text-gray-500 mt-1">Format: ABCD0XXXXXX</div>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Branch Name *</label>
+              <input name="branchName" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Education + Nominee -->
+        <div>
+          <div class="font-bold text-gray-700 mb-2">Education & Nominee</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label class="text-sm font-semibold text-gray-700">Higher Education *</label>
+              <input name="higherEducation" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Nominee Name *</label>
+              <input name="nomineeName" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Nominee Relation *</label>
+              <input name="nomineeRelation" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Nominee DOB *</label>
+              <input type="date" name="nomineeDob" class="w-full border rounded-lg px-3 py-2" required/>
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-sm font-semibold text-gray-700">Nominee Address *</label>
+              <input name="nomineeAddress" class="w-full border rounded-lg px-3 py-2" required minlength="5"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Uploads -->
+        <div>
+          <div class="font-bold text-gray-700 mb-2">Upload Documents</div>
+          <div class="text-xs text-gray-500 mb-3">
+            Limits: Docs ≤ 2MB each, Photo ≤ 500KB, Signature ≤ 200KB.
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Aadhaar Document * (PDF/JPG/PNG)</label>
+              <input type="file" id="aadhaarDoc" class="w-full border rounded-lg px-3 py-2" accept=".pdf,.jpg,.jpeg,.png" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">PAN Document * (PDF/JPG/PNG)</label>
+              <input type="file" id="panDoc" class="w-full border rounded-lg px-3 py-2" accept=".pdf,.jpg,.jpeg,.png" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Bank Passbook * (PDF/JPG/PNG)</label>
+              <input type="file" id="bankPassbook" class="w-full border rounded-lg px-3 py-2" accept=".pdf,.jpg,.jpeg,.png" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Education Certificate * (PDF/JPG/PNG)</label>
+              <input type="file" id="educationCert" class="w-full border rounded-lg px-3 py-2" accept=".pdf,.jpg,.jpeg,.png" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Photo * (JPG/PNG ≤ 500KB)</label>
+              <input type="file" id="photo" class="w-full border rounded-lg px-3 py-2" accept=".jpg,.jpeg,.png" required/>
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700">Signature * (PNG/JPG ≤ 200KB)</label>
+              <input type="file" id="signature" class="w-full border rounded-lg px-3 py-2" accept=".png,.jpg,.jpeg" required/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Consent + Submit -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <label class="flex gap-2 items-start text-sm text-gray-700">
+            <input type="checkbox" id="consent" class="mt-1" required />
+            <span>
+              I declare that the above information is true and correct and I consent to processing of my data.
+            </span>
+          </label>
+
+          <button type="submit"
+                  class="mt-4 w-full gradient-bg text-white py-3 rounded-xl font-bold hover:opacity-90">
+            Submit Form
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Status Panel -->
+    <div id="panel-status" class="card p-6 hidden">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-800">Your Status</h2>
+        <button id="btn-refresh" class="text-sm font-semibold text-blue-700 hover:underline">Refresh</button>
+      </div>
+
+      <div id="status-summary" class="mb-4 text-sm text-gray-700"></div>
+      <div id="timeline" class="space-y-3"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ======================
+    // CONFIG
+    // ======================
+    const API = "https://rspl-hr-onboarding-backend-production.up.railway.app/api";
+
+    // Candidate endpoints
+    const ENDPOINTS = {
+      verify: "/candidate/verify-token",
+      submitForm: "/candidate/submit-form",
+      status: "/candidate/status"
+    };
+
+    // File size limits (bytes)
+    const LIMITS = {
+      doc2mb: 2 * 1024 * 1024,
+      photo500kb: 500 * 1024,
+      sign200kb: 200 * 1024
+    };
+
+    // ======================
+    // Helpers
+    // ======================
+    function qs(id) { return document.getElementById(id); }
+    function getToken() {
+      const url = new URL(window.location.href);
+      return url.searchParams.get("token");
+    }
+    function setStep(activeIndex) {
+      for (let i=1;i<=3;i++) {
+        const el = qs("step-" + i);
+        el.className = (i === activeIndex)
+          ? "step-active px-3 py-1 rounded-full text-sm font-semibold"
+          : "step-inactive px-3 py-1 rounded-full text-sm font-semibold";
+      }
+    }
+    function showAlert(msg, type="info") {
+      const a = qs("alert");
+      a.classList.remove("hidden");
+      const colors = {
+        info: "bg-blue-50 text-blue-800 border border-blue-200",
+        success: "bg-green-50 text-green-800 border border-green-200",
+        error: "bg-red-50 text-red-800 border border-red-200",
+        warn: "bg-yellow-50 text-yellow-800 border border-yellow-200"
+      };
+      a.className = `mb-4 px-4 py-3 rounded-lg ${colors[type] || colors.info}`;
+      a.textContent = msg;
+    }
+    function hideAlert() { qs("alert").classList.add("hidden"); }
+
+    function statusBadge(status) {
+      const map = {
+        INITIATED: ["b-init", "INITIATED"],
+        FORM_SUBMITTED: ["b-form", "FORM SUBMITTED"],
+        SIGNED: ["b-signed", "SIGNED"],
+        APPROVED: ["b-approved", "APPROVED"],
+        REJECTED: ["b-rejected", "REJECTED"]
+      };
+      const [cls, text] = map[status] || ["b-init", status || "-"];
+      const b = qs("cand-badge");
+      b.className = `badge ${cls} inline-block`;
+      b.textContent = text;
+    }
+
+    async function apiGet(path, params={}) {
+      const url = new URL(API + path);
+      Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+      const res = await fetch(url.toString(), { method: "GET" });
+      return res.json();
+    }
+
+    async function apiPostFormData(path, formData) {
+      const res = await fetch(API + path, {
+        method: "POST",
+        body: formData
+      });
+      return res.json();
+    }
+
+    function requireFile(id, maxBytes, label) {
+      const f = qs(id).files[0];
+      if (!f) throw new Error(`Missing file: ${label}`);
+      if (maxBytes && f.size > maxBytes) throw new Error(`${label} exceeds size limit`);
+      return f;
+    }
+
+    function showPanel(panelId) {
+      ["panel-verify","panel-summary","panel-form","panel-status"].forEach(p => {
+        qs(p).classList.add("hidden");
+      });
+      qs(panelId).classList.remove("hidden");
+    }
+
+    // ======================
+    // Main flow
+    // ======================
+    const token = getToken();
+    if (!token) {
+      showAlert("Token missing in URL. Please open the onboarding link provided by HR.", "error");
+      qs("verify-status").textContent = "Token Missing";
+    } else {
+      qs("token-short").textContent = token.slice(0, 10) + "...";
+      verifyToken(token);
+    }
+
+    async function verifyToken(token) {
+      setStep(1);
+      showPanel("panel-verify");
+      hideAlert();
+      qs("verify-status").textContent = "Checking…";
+
+      try {
+        const res = await apiGet(ENDPOINTS.verify, { token });
+        if (!res || !res.success || !res.data || res.data.tokenValid !== true) {
+          qs("verify-status").textContent = "Invalid";
+          showAlert(res?.message || "Token invalid/expired. Please contact HR.", "error");
+          return;
+        }
+
+        // Candidate summary
+        qs("cand-name").textContent = res.data.employeeName || "-";
+        qs("cand-email").textContent = res.data.emailId || "-";
+        statusBadge(res.data.status);
+
+        qs("verify-status").textContent = "Verified ✅";
+        showAlert("Token verified successfully. Please complete the joining form.", "success");
+
+        // Show summary + form
+        qs("panel-summary").classList.remove("hidden");
+        showPanel("panel-form");
+        setStep(2);
+
+        // Preload status
+        await loadStatus();
+
+      } catch (e) {
+        qs("verify-status").textContent = "Error";
+        showAlert("Verification failed. Please try again or contact HR.", "error");
+        console.error(e);
+      }
+    }
+
+    // ======================
+    // Form submission (NO PDF links and NO signed PDF uploads)
+    // ======================
+    qs("joining-form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      hideAlert();
+
+      if (!token) return showAlert("Token missing. Please open link again.", "error");
+
+      try {
+        // File validations
+        const aadhaarDoc = requireFile("aadhaarDoc", LIMITS.doc2mb, "Aadhaar Document");
+        const panDoc = requireFile("panDoc", LIMITS.doc2mb, "PAN Document");
+        const bankPassbook = requireFile("bankPassbook", LIMITS.doc2mb, "Bank Passbook");
+        const educationCert = requireFile("educationCert", LIMITS.doc2mb, "Education Certificate");
+        const photo = requireFile("photo", LIMITS.photo500kb, "Photo");
+        const signature = requireFile("signature", LIMITS.sign200kb, "Signature");
+
+        if (!qs("consent").checked) throw new Error("Consent is required.");
+
+        const fd = new FormData();
+        fd.append("token", token);
+
+        // text fields
+        const form = ev.target;
+        const fields = [
+          "fathersName","dob","gender","maritalStatus","bloodGroup",
+          "permanentAddress","district","state","pinCode",
+          "panCardNo","bankName","bankAccountNo","ifscCode","branchName",
+          "higherEducation",
+          "nomineeName","nomineeRelation","nomineeDob","nomineeAddress"
+        ];
+        fields.forEach(name => fd.append(name, form.elements[name].value));
+
+        // files
+        fd.append("aadhaarDoc", aadhaarDoc);
+        fd.append("panDoc", panDoc);
+        fd.append("bankPassbook", bankPassbook);
+        fd.append("educationCert", educationCert);
+        fd.append("photo", photo);
+        fd.append("signature", signature);
+
+        showAlert("Submitting form… Please wait.", "info");
+
+        const res = await apiPostFormData(ENDPOINTS.submitForm, fd);
+
+        if (!res || !res.success) {
+          showAlert(res?.message || "Form submission failed.", "error");
+          return;
+        }
+
+        showAlert("Form submitted successfully. You can track your status below.", "success");
+
+        // Move to status step
+        await loadStatus();
+        showPanel("panel-status");
+        setStep(3);
+
+      } catch (err) {
+        showAlert(err.message || "Validation error.", "error");
+      }
+    });
+
+    // ======================
+    // Status tracker
+    // ======================
+    async function loadStatus() {
+      if (!token) return;
+
+      try {
+        const res = await apiGet(ENDPOINTS.status, { token });
+        if (res && res.success && res.data) {
+          statusBadge(res.data.status);
+
+          const summary = qs("status-summary");
+          const empId = res.data.employeeId ? ` | Employee ID: <b>${res.data.employeeId}</b>` : "";
+          summary.innerHTML = `Current Status: <b>${res.data.status}</b>${empId}`;
+
+          const tl = qs("timeline");
+          tl.innerHTML = "";
+          (res.data.timeline || []).forEach(item => {
+            const row = document.createElement("div");
+            row.className = "flex items-start gap-3";
+            row.innerHTML = `
+              <div class="w-3 h-3 mt-1 rounded-full ${item.completed ? "bg-green-600" : "bg-gray-300"}"></div>
+              <div>
+                <div class="font-semibold text-gray-800">${item.stage}</div>
+                <div class="text-xs text-gray-500">${item.timestamp || ""}</div>
+              </div>
+            `;
+            tl.appendChild(row);
+          });
+        }
+      } catch (e) {
+        console.warn("Status fetch failed:", e);
+      }
+    }
+
+    qs("btn-refresh").addEventListener("click", async () => {
+      showAlert("Refreshing status…", "info");
+      await loadStatus();
+      showAlert("Status updated.", "success");
+      setTimeout(hideAlert, 1200);
+    });
+  </script>
+</body>
+</html>
